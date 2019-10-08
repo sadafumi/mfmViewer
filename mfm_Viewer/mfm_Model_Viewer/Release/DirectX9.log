@@ -1,7 +1,0 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Preview\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(452,5): warning MSB8028: 中間ディレクトリ (Release\) に別のプロジェクト (DirectX9.vcxproj) と共有されているファイルが含まれています。これにより、クリーンしてリビルド動作が適切に行われない可能性があります。
-  コード生成しています。
-  Previous IPDB not found, fall back to full compilation.
-  All 1640 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
-  コード生成が終了しました。
-mfm.lib(mfm.obj) : warning LNK4099: PDB '' が 'mfm.lib(mfm.obj)' で、または '' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
-  DirectX9.vcxproj -> D:\source\mfm_viewer\mfm_Viewer\Release\mfm_Model_Viewer.exe
