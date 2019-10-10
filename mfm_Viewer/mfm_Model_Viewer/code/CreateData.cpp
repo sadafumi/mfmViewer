@@ -1,5 +1,5 @@
 #include "main.h"
-#include "mfm.h"
+#include "mfm.hpp"
 #include "CreateData.h"
 #include "Graphics.h"
 #include <D3DCompiler.h>
@@ -135,16 +135,16 @@ void Create::MFMMesh(DATA_TYPE::MFMMESHDATA *InOut, const char* TeXCFileName)
 		MessageBox(NULL, &err[0], "モデルの読み込みに失敗しました", MB_OK);
 		return;
 	}
-	mesh_.resize(inMFMmodel.MeshNum);
+	mesh_.resize(inMFMmodel.Meshs.size());
 	
 	// メッシュ数分回す
 	for (int i = 0; i < (int)mesh_.size(); i++)
 	{
 		// インデックス数分回す
-		mesh_[i].Vertex.resize(inMFMmodel.MeshData[i].Index.Num);
-		InOut->MeshData.resize(inMFMmodel.MeshData[i].Index.Num);
+		mesh_[i].Vertex.resize(inMFMmodel.Meshs[i].Index.size());
+		InOut->MeshData.resize(inMFMmodel.Meshs[i].Index.size());
 
-		int temp_material_index = inMFMmodel.MeshData[i].MaterialIndex;
+		int temp_material_index = inMFMmodel.Meshs[i].MaterialIndex;
 		// メッシュインデックス番号取得
 		InOut->MeshData[i].MaterialIndex = temp_material_index;
 
@@ -152,82 +152,43 @@ void Create::MFMMesh(DATA_TYPE::MFMMESHDATA *InOut, const char* TeXCFileName)
 		for (int j = 0; j <(int)mesh_[i].Vertex.size(); j++)
 		{
 			// 頂点
-			if (inMFMmodel.MeshData[i].Vertex.Num != 0)
+			if (inMFMmodel.Meshs[i].Vertex.size() != 0)
 			{
-				int temp_index_num = inMFMmodel.MeshData[i].Index.Data[j];
-				mesh_[i].Vertex[j].Pos.x = inMFMmodel.MeshData[i].Vertex.Data[temp_index_num].x;
-				mesh_[i].Vertex[j].Pos.y = inMFMmodel.MeshData[i].Vertex.Data[temp_index_num].y;
-				mesh_[i].Vertex[j].Pos.z = inMFMmodel.MeshData[i].Vertex.Data[temp_index_num].z;
+				int temp_index_num = inMFMmodel.Meshs[i].Index[j];
+				mesh_[i].Vertex[j].Pos.x = inMFMmodel.Meshs[i].Vertex[temp_index_num].x;
+				mesh_[i].Vertex[j].Pos.y = inMFMmodel.Meshs[i].Vertex[temp_index_num].y;
+				mesh_[i].Vertex[j].Pos.z = inMFMmodel.Meshs[i].Vertex[temp_index_num].z;
 			}
 
 			// 法線
-			if (inMFMmodel.MeshData[i].Normals.Num != 0)
+			if (inMFMmodel.Meshs[i].Normals.size() != 0)
 			{
-				mesh_[i].Vertex[j].Normal.x = inMFMmodel.MeshData[i].Normals.Data[j].x;
-				mesh_[i].Vertex[j].Normal.y = inMFMmodel.MeshData[i].Normals.Data[j].y;
-				mesh_[i].Vertex[j].Normal.z = inMFMmodel.MeshData[i].Normals.Data[j].z;
+				mesh_[i].Vertex[j].Normal.x = inMFMmodel.Meshs[i].Normals[j].x;
+				mesh_[i].Vertex[j].Normal.y = inMFMmodel.Meshs[i].Normals[j].y;
+				mesh_[i].Vertex[j].Normal.z = inMFMmodel.Meshs[i].Normals[j].z;
 			}
 
 			// UV
-			if (inMFMmodel.MeshData[i].TexUV.Num != 0)
+			if (inMFMmodel.Meshs[i].UV.size() != 0)
 			{
-				mesh_[i].Vertex[j].texcoord.x = inMFMmodel.MeshData[i].TexUV.Data[j].U;
-				mesh_[i].Vertex[j].texcoord.y = inMFMmodel.MeshData[i].TexUV.Data[j].V;
+				mesh_[i].Vertex[j].texcoord.x = inMFMmodel.Meshs[i].UV[j].U;
+				mesh_[i].Vertex[j].texcoord.y = inMFMmodel.Meshs[i].UV[j].V;
 			}
-
-			// カラー
-			D3DXCOLOR temp_color;
-			temp_color.r = inMFMmodel.MaterialData[temp_material_index].Color.Diffuse.x;
-			temp_color.g = inMFMmodel.MaterialData[temp_material_index].Color.Diffuse.y;
-			temp_color.b = inMFMmodel.MaterialData[temp_material_index].Color.Diffuse.z;
-			temp_color.a = inMFMmodel.MaterialData[temp_material_index].Color.Transparency;
 
 			mesh_[i].Vertex[j].color = D3DXCOLOR(255,255,255,255);
 		}
 		// テクスチャ名の読み込み
 
-		if (inMFMmodel.MaterialData[temp_material_index].pTexName != NULL)
+		if (inMFMmodel.Material[temp_material_index].name.data() != "")
 		{
-			InOut->MeshData[i].TexName = inMFMmodel.MaterialData[temp_material_index].pTexName;
+			InOut->MeshData[i].TexName = inMFMmodel.Material[temp_material_index].name;
 		}
 		// プリミティブ数の取得
-		InOut->MeshData[i].PrimitiveNum = inMFMmodel.MeshData[i].PrimitiveIndex;
+		InOut->MeshData[i].PrimitiveNum = inMFMmodel.Meshs[i].PrimitiveIndex;
 	}
 	// マテリアル数の確定
-	InOut->Material.resize(inMFMmodel.materialNum);
+	//InOut->Material.resize(inMFMmodel);
 
-	// メッシュ数分回す
-	for (int i = 0; i < (int)InOut->Material.size(); i++)
-	{
-		// アンビエント
-		InOut->Material[i].Ambient.r = inMFMmodel.MaterialData[i].Color.Ambient.x;
-		InOut->Material[i].Ambient.g = inMFMmodel.MaterialData[i].Color.Ambient.y;
-		InOut->Material[i].Ambient.b = inMFMmodel.MaterialData[i].Color.Ambient.z;
-		InOut->Material[i].Ambient.a = inMFMmodel.MaterialData[i].Color.Transparency;
-
-		// ディフューズ								   
-		InOut->Material[i].Diffuse.r = inMFMmodel.MaterialData[i].Color.Diffuse.x;
-		InOut->Material[i].Diffuse.g = inMFMmodel.MaterialData[i].Color.Diffuse.y;
-		InOut->Material[i].Diffuse.b = inMFMmodel.MaterialData[i].Color.Diffuse.z;
-		InOut->Material[i].Diffuse.a = inMFMmodel.MaterialData[i].Color.Transparency;
-
-		// エミッシブ
-		InOut->Material[i].Emissive.r = inMFMmodel.MaterialData[i].Color.Emissive.x;
-		InOut->Material[i].Emissive.g = inMFMmodel.MaterialData[i].Color.Emissive.y;
-		InOut->Material[i].Emissive.b = inMFMmodel.MaterialData[i].Color.Emissive.z;
-		InOut->Material[i].Emissive.a = inMFMmodel.MaterialData[i].Color.Transparency;
-
-		// スペキュラ
-		InOut->Material[i].Power = inMFMmodel.MaterialData[i].Color.Shininess;
-
-		// スペキュラ色
-		InOut->Material[i].Specular.r = inMFMmodel.MaterialData[i].Color.Specular.x;
-		InOut->Material[i].Specular.g = inMFMmodel.MaterialData[i].Color.Specular.y;
-		InOut->Material[i].Specular.b = inMFMmodel.MaterialData[i].Color.Specular.z;
-		InOut->Material[i].Specular.a = inMFMmodel.MaterialData[i].Color.Transparency;
-	}
-	// D3DDeviceの取得
-	
 	VERTEX3D * pVer;
 
 	InOut->VertexBuffer.resize(mesh_.size());
@@ -256,157 +217,103 @@ void Create::MFMAnime(DATA_TYPE::MFMANIMEDATA *InOut, const char* TeXCFileName)
 
 	inMFMmodel.FileLoadFullData((TCHAR*)TeXCFileName);
 
-	//バッファをメッシュの総数分増やす
-	mesh_.resize(inMFMmodel.MeshNum);
-	InOut->MeshData.resize(inMFMmodel.MeshNum);
-	//=====================================================================================================
-	// メッシュの情報を取得
+	
+	mesh_.resize(inMFMmodel.Meshs.size());
+
+	// メッシュ数分回す
 	for (int i = 0; i < (int)mesh_.size(); i++)
 	{
 		// インデックス数分回す
-		mesh_[i].Vertex.resize(inMFMmodel.MeshData[i].Index.Num);
-		
-		InOut->MeshData[i].MaterialIndex = inMFMmodel.MeshData[i].MaterialIndex;
-		int temp_material_index = inMFMmodel.MeshData[i].MaterialIndex;
-		// メッシュインデックス番号取得
-	
-		InOut->nAnimFrame = inMFMmodel.FrameNum;
-		
-		inMFMmodel.BoneData[i].BoneNum;
+		mesh_[i].Vertex.resize(inMFMmodel.Meshs[i].Index.size());
+		InOut->MeshData.resize(inMFMmodel.Meshs[i].Index.size());
 
-		//=====================================================================================================
-		//[i]番目の頂点情報を取得
-		for (int j = 0; j <(int)mesh_[i].Vertex.size(); j++)
+		int temp_material_index = inMFMmodel.Meshs[i].MaterialIndex;
+		// メッシュインデックス番号取得
+		InOut->MeshData[i].MaterialIndex = temp_material_index;
+
+
+		for (int j = 0; j < (int)mesh_[i].Vertex.size(); j++)
 		{
 			// 頂点
-			int temp_index_num = inMFMmodel.MeshData[i].Index.Data[j];
-			mesh_[i].Vertex[j].Pos.x = inMFMmodel.MeshData[i].Vertex.Data[temp_index_num].x;
-			mesh_[i].Vertex[j].Pos.y = inMFMmodel.MeshData[i].Vertex.Data[temp_index_num].y;
-			mesh_[i].Vertex[j].Pos.z = inMFMmodel.MeshData[i].Vertex.Data[temp_index_num].z;
+			if (inMFMmodel.Meshs[i].Vertex.size() != 0)
+			{
+				int temp_index_num = inMFMmodel.Meshs[i].Index[j];
+				mesh_[i].Vertex[j].Pos.x = inMFMmodel.Meshs[i].Vertex[temp_index_num].x;
+				mesh_[i].Vertex[j].Pos.y = inMFMmodel.Meshs[i].Vertex[temp_index_num].y;
+				mesh_[i].Vertex[j].Pos.z = inMFMmodel.Meshs[i].Vertex[temp_index_num].z;
+			}
 
 			// 法線
-			mesh_[i].Vertex[j].Normal.x = inMFMmodel.MeshData[i].Normals.Data[j].x;
-			mesh_[i].Vertex[j].Normal.y = inMFMmodel.MeshData[i].Normals.Data[j].y;
-			mesh_[i].Vertex[j].Normal.z = inMFMmodel.MeshData[i].Normals.Data[j].z;
+			if (inMFMmodel.Meshs[i].Normals.size() != 0)
+			{
+				mesh_[i].Vertex[j].Normal.x = inMFMmodel.Meshs[i].Normals[j].x;
+				mesh_[i].Vertex[j].Normal.y = inMFMmodel.Meshs[i].Normals[j].y;
+				mesh_[i].Vertex[j].Normal.z = inMFMmodel.Meshs[i].Normals[j].z;
+			}
 
 			// UV
-			mesh_[i].Vertex[j].texcoord.x = inMFMmodel.MeshData[i].TexUV.Data[j].U;
-			mesh_[i].Vertex[j].texcoord.y = inMFMmodel.MeshData[i].TexUV.Data[j].V;
-
-			// カラー
-			D3DXCOLOR temp_color;
-			temp_color.r = inMFMmodel.MaterialData[temp_material_index].Color.Diffuse.x;
-			temp_color.g = inMFMmodel.MaterialData[temp_material_index].Color.Diffuse.y;
-			temp_color.b = inMFMmodel.MaterialData[temp_material_index].Color.Diffuse.z;
-			temp_color.a = inMFMmodel.MaterialData[temp_material_index].Color.Transparency;
-
-			mesh_[i].Vertex[j].color = (D3DCOLOR)temp_color;
-
-			if (inMFMmodel.BoneData[i].BoneNum > 0)
+			if (inMFMmodel.Meshs[i].UV.size() != 0)
 			{
-				for (int k = 0; k < MAX_BONE; k++)
-				{
-					mesh_[i].Vertex[j].ImpactMap.weight[k] = inMFMmodel.BoneData[i].VertexData.Data[temp_index_num].weight[k];
-					mesh_[i].Vertex[j].ImpactMap.matrixIndex[k] = inMFMmodel.BoneData[i].VertexData.Data[temp_index_num].index[k];
-				}
+				mesh_[i].Vertex[j].texcoord.x = inMFMmodel.Meshs[i].UV[j].U;
+				mesh_[i].Vertex[j].texcoord.y = inMFMmodel.Meshs[i].UV[j].V;
 			}
+
+			mesh_[i].Vertex[j].color = D3DXCOLOR(255, 255, 255, 255);
 		}
+		// テクスチャ名の読み込み
 
-		//=====================================================================================================
-
-		//=====================================================================================================
-		// テクスチャ名の取得
-		if (inMFMmodel.MaterialData[temp_material_index].pTexName != NULL)
+		if (inMFMmodel.Material[temp_material_index].name.data() != "")
 		{
-			InOut->MeshData[i].TexName = inMFMmodel.MaterialData[temp_material_index].pTexName;
+			InOut->MeshData[i].TexName = inMFMmodel.Material[temp_material_index].name;
 		}
-		//=====================================================================================================
-
-		//=====================================================================================================
 		// プリミティブ数の取得
-		InOut->MeshData[i].PrimitiveNum = inMFMmodel.MeshData[i].PrimitiveIndex;
-		//=====================================================================================================
-
+		InOut->MeshData[i].PrimitiveNum = inMFMmodel.Meshs[i].PrimitiveIndex;
+	}
 		//=====================================================================================================
 		//アニメーション数を取得
-		InOut->nAnimFrame = inMFMmodel.FrameNum;
+		//InOut->nAnimFrame = inMFMmodel.FrameNum;
 		//=====================================================================================================
 
 		//=====================================================================================================
 		//ボーンを取得
-		//メッシュ数分だけボーン領域を拡張
-		InOut->bone.resize(mesh_.size());
-		//1メッシュに存在するボーン数分だけ領域を拡張
-		InOut->bone[i].resize(inMFMmodel.BoneData[i].BoneNum);
-		for (int j = 0; j < (int)InOut->bone[i].size(); j++)
-		{
-			//アニメーションフレーム分だけ拡張
-			InOut->bone[i][j].MatAry.resize(InOut->nAnimFrame);
-			D3DXMATRIX init, inv;
-			for (int r = 0; r < 4; r++)
-			{
-				for (int c = 0; c < 4; c++)
-				{
-					//初期姿勢行列を取得
-					init(r, c) = inMFMmodel.BoneData[i].Data[j].init.Get(r,c);
-				}
-			}
-			//初期姿勢行列の逆行列を作成
-			D3DXMatrixInverse(&inv, NULL, &init);
-			for (int k = 0; k < InOut->nAnimFrame; k++)
-			{
-				D3DXMATRIX  perFrame;
-				for (int r = 0; r < 4; r++)
-				{
-					for (int c = 0; c < 4; c++)
-					{
-						//行列移動
-						perFrame(r, c) = inMFMmodel.BoneData[i].Data[j].perFrame.Data[k].Get(r, c);
-					}
-				}
-				//移動行列に初期姿勢逆行列をかける
-				InOut->bone[i][j].MatAry[k] = inv * perFrame;
-			}
-		}
-		//=====================================================================================================
-	}
+		////メッシュ数分だけボーン領域を拡張
+		//InOut->bone.resize(mesh_.size());
+		////1メッシュに存在するボーン数分だけ領域を拡張
+		//InOut->bone[i].resize(inMFMmodel.BoneData[i].BoneNum);
+		//for (int j = 0; j < (int)InOut->bone[i].size(); j++)
+		//{
+		//	//アニメーションフレーム分だけ拡張
+		//	InOut->bone[i][j].MatAry.resize(InOut->nAnimFrame);
+		//	D3DXMATRIX init, inv;
+		//	for (int r = 0; r < 4; r++)
+		//	{
+		//		for (int c = 0; c < 4; c++)
+		//		{
+		//			//初期姿勢行列を取得
+		//			init(r, c) = inMFMmodel.BoneData[i].Data[j].init.Get(r,c);
+		//		}
+		//	}
+		//	//初期姿勢行列の逆行列を作成
+		//	D3DXMatrixInverse(&inv, NULL, &init);
+		//	for (int k = 0; k < InOut->nAnimFrame; k++)
+		//	{
+		//		D3DXMATRIX  perFrame;
+		//		for (int r = 0; r < 4; r++)
+		//		{
+		//			for (int c = 0; c < 4; c++)
+		//			{
+		//				//行列移動
+		//				perFrame(r, c) = inMFMmodel.BoneData[i].Data[j].perFrame.Data[k].Get(r, c);
+		//			}
+		//		}
+		//		//移動行列に初期姿勢逆行列をかける
+		//		InOut->bone[i][j].MatAry[k] = inv * perFrame;
+		//	}
+		//}
+		////=====================================================================================================
+	//}
 	//=====================================================================================================
-	// マテリアル数の確定
-	InOut->Material.resize(inMFMmodel.materialNum);
 
-	// マテリアル数分回す
-	for (int i = 0; i < (int)InOut->Material.size(); i++)
-	{
-		// アンビエント
-		InOut->Material[i].Ambient.r = inMFMmodel.MaterialData[i].Color.Ambient.x;
-		InOut->Material[i].Ambient.g = inMFMmodel.MaterialData[i].Color.Ambient.y;
-		InOut->Material[i].Ambient.b = inMFMmodel.MaterialData[i].Color.Ambient.z;
-		InOut->Material[i].Ambient.a = inMFMmodel.MaterialData[i].Color.Transparency;
-
-		// ディフューズ								   
-		InOut->Material[i].Diffuse.r = inMFMmodel.MaterialData[i].Color.Diffuse.x;
-		InOut->Material[i].Diffuse.g = inMFMmodel.MaterialData[i].Color.Diffuse.y;
-		InOut->Material[i].Diffuse.b = inMFMmodel.MaterialData[i].Color.Diffuse.z;
-		InOut->Material[i].Diffuse.a = inMFMmodel.MaterialData[i].Color.Transparency;
-
-		// エミッシブ
-		InOut->Material[i].Emissive.r = inMFMmodel.MaterialData[i].Color.Emissive.x;
-		InOut->Material[i].Emissive.g = inMFMmodel.MaterialData[i].Color.Emissive.y;
-		InOut->Material[i].Emissive.b = inMFMmodel.MaterialData[i].Color.Emissive.z;
-		InOut->Material[i].Emissive.a = inMFMmodel.MaterialData[i].Color.Transparency;
-
-		// スペキュラ
-		InOut->Material[i].Power = inMFMmodel.MaterialData[i].Color.Shininess;
-
-		// スペキュラ色
-		InOut->Material[i].Specular.r = inMFMmodel.MaterialData[i].Color.Specular.x;
-		InOut->Material[i].Specular.g = inMFMmodel.MaterialData[i].Color.Specular.y;
-		InOut->Material[i].Specular.b = inMFMmodel.MaterialData[i].Color.Specular.z;
-		InOut->Material[i].Specular.a = inMFMmodel.MaterialData[i].Color.Transparency;
-	}
-
-
-	// D3DDeviceの取得
 	
 	VERTEX3D * pVer;
 
@@ -1285,6 +1192,7 @@ LPDIRECT3DTEXTURE9 Create::CheckTexture( const char* TeXCFileName)
 			char err[124];
 			sprintf(&err[0], "テクスチャの取得「%s」に失敗しました", TeXCFileName);
 			MessageBox(NULL, &err[0], "テクスチャの読み込みに失敗しました", MB_OK);
+			return NULL;
 		}
 		TextureStock.emplace(TeXCFileName,buff);
 		return TextureStock[TeXCFileName].Texture;

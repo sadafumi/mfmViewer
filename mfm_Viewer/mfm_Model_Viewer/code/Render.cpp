@@ -699,7 +699,7 @@ void Render::Shader::Modelmfm::Draw()							//描画
 			}
 
 			// マテリアルをデバイスにセット
-			DeviceHider::SetMaterial(&this->pmfmData->Material[this->pmfmData->MeshData[i].MaterialIndex]);
+			//DeviceHider::SetMaterial(&this->pmfmData->Material[this->pmfmData->MeshData[i].MaterialIndex]);
 
 			//DeviceHider::DrawPrimitive(D3DPT_POINTLIST, this->pmfmData->MeshData[i].PrimitiveNum);
 			DeviceHider::DrawPrimitive(D3DPT_TRIANGLELIST, this->pmfmData->MeshData[i].PrimitiveNum);

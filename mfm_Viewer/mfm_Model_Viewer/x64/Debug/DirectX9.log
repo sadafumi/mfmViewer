@@ -1,0 +1,3 @@
+﻿D:\source\mfm_viewer\mfm_Viewer\mfm_model_viewer\Shader\PS_Bumpmap.hlsl(42,29-39): error X4502: invalid vs_2_0 output semantic 'SV_TARGET'
+  
+  compilation failed; no code produced

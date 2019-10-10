@@ -46,7 +46,7 @@
     <ClInclude Include="code\InputMouse.h" />
     <ClInclude Include="code\Light.h" />
     <ClInclude Include="code\main.h" />
-    <ClInclude Include="code\mfm.h" />
+    <ClInclude Include="code\mfm.hpp" />
     <ClInclude Include="code\mtf.h" />
     <ClInclude Include="code\NonCopy.h" />
     <ClInclude Include="code\Render.h" />
